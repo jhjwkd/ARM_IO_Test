@@ -158,7 +158,7 @@ int main()
   	Port_Setup();
 	while(1) 
 	{
-		mod = n%3;
+		mod = n%4;
 		
 		// LED off
 		//rPIO_CODR_B=(LED1);
@@ -192,6 +192,13 @@ int main()
 		rPIO_SODR_B=(LED1);
 		for(i = 0; i < 10; ++i) Delay(100000);
 		break;
+		
+		case 3:
+		
+		rPIO_SODR_B=(LED2);
+		for(i = 0; i < 10; ++i) Delay(100000);
+		break;
+		
 		}
 		
 		n++;
