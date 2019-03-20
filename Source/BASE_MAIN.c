@@ -175,7 +175,7 @@ int main()
 		case 0:
 				// LED on
 		//rPIO_SODR_B=(LED1|LED2|LED3);
-		rPIO_SODR_B=(LED1);
+		rPIO_SODR_B=(LED3);
 		for(i = 0; i < 10; ++i) Delay(100000);
 		break;
 		
@@ -189,7 +189,7 @@ int main()
 		case 2:
 				// LED on
 		//rPIO_SODR_B=(LED1|LED2|LED3);
-		rPIO_SODR_B=(LED3);
+		rPIO_SODR_B=(LED1);
 		for(i = 0; i < 10; ++i) Delay(100000);
 		break;
 		}
