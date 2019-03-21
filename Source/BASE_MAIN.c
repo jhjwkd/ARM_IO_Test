@@ -152,56 +152,18 @@ unsigned char Result=0;
                    
 int main()
 {
-	int i = 0;
-	int n = 0;
-	int mod = 0;
-  	Port_Setup();
-	while(1) 
-	{
-		mod = n%4;
-		
-		// LED off
-		//rPIO_CODR_B=(LED1);
-		rPIO_CODR_B=(LED1|LED2|LED3);
-		for(i = 0; i < 10; ++i) Delay(100000);
+  int n=0;
 
-		// LED on
-		//rPIO_SODR_B=(LED1|LED2|LED3);
-		//rPIO_SODR_B=(LED1);
-		//for(i = 0; i < 10; ++i) Delay(100000);
-		
-		switch(mod)
-		{
-		case 0:
-				// LED on
-		//rPIO_SODR_B=(LED1|LED2|LED3);
-		rPIO_SODR_B=30;
-		for(i = 0; i < 10; ++i) Delay(100000);
-		break;
-		
-		case 1:
-				// LED on
-		//rPIO_SODR_B=(LED1|LED2|LED3);
-		rPIO_SODR_B=29;
-		for(i = 0; i < 10; ++i) Delay(100000);
-		break;
-			
-		case 2:
-				// LED on
-		//rPIO_SODR_B=(LED1|LED2|LED3);
-		rPIO_SODR_B=28;
-		for(i = 0; i < 10; ++i) Delay(100000);
-		break;
-		
-		case 3:
-		
-		rPIO_SODR_B=(LED2);
-		for(i = 0; i < 10; ++i) Delay(100000);
-		break;
-		
-		}
-		
-		n++;
-			// first = 28 last = 30
-	}	
-}
+  	Port_Setup();
+  	DBG_Init();
+  	
+  	Uart_Printf("Hello World \n\r");
+  	
+  	while(1)
+  	{
+  	
+  	Uart_Printf("n=%d \n\r", n);
+  	
+  	n++;
+  	}
+	}
