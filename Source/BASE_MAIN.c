@@ -149,16 +149,17 @@ unsigned char Result=0;
 //-----------------------------------------------------------------------------
 /// Main Procedure
 //-----------------------------------------------------------------------------
-int fac(int n)
+int fib(int n)
 {
  
  // n! = n * (n-1)!
  // fac(n) = n * fac(n-1);
- 	if(n == 0) return 1;
-	if(n == 1) return 1;
-	return n * fac(n-1);
+ 
 
-	
+ 	
+ 	if (n == 1 || n == 2) return 1;
+ 	
+	return fib(n-1)+fib(n-2);
 }            
 
 int main()
@@ -173,7 +174,7 @@ int main()
   while(1)
   {
   
-  Uart_Printf("%d!= %d \n\r",n, fac(n));
+  Uart_Printf("%d!= %d \n\r",n, fib(n));
 
   for(i = 0; i < 30; ++i) Delay(100000);
   
