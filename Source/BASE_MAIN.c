@@ -149,54 +149,35 @@ unsigned char Result=0;
 //-----------------------------------------------------------------------------
 /// Main Procedure
 //-----------------------------------------------------------------------------
-            
+int fac(int n)
+{
+ 
+ // n! = n * (n-1)!
+ // fac(n) = n * fac(n-1);
+ 	if(n == 0) return 1;
+	if(n == 1) return 1;
+	return n * fac(n-1);
+
+	
+}            
+
 int main()
 {
-    int i = 0;
-    int num1 = 0;
-    int num2 = 0;
-    int num3 = 0;
-    
-    Port_Setup();
-    while(1)
-      
-    {
-    // LED off
-    //rPIO_CODR_B=(LED1);
-    rPIO_CODR_B=(LED1|LED2|LED3);
-    for(i = 0; i < 10; ++i) Delay(10000000);
+  int i;
+  int n=0;
+  
+  
+  Port_Setup();
+  DBG_Init();
+  
+  while(1)
+  {
+  
+  Uart_Printf("%d!= %d \n\r",n, fac(n));
 
-for(num1=0; num1<=7; num1++)
-   {
-   num2 = num1%2;
-   num3 = num1%4;
-   
-    rPIO_CODR_B=(LED1|LED2|LED3);
-    for(i = 0; i < 10; ++i) Delay(10000000);
-
- if(num1==0)
- {
-    rPIO_CODR_B=(LED1|LED2|LED3);
-    for(i = 0; i < 10; ++i) Delay(10000000);
- }
-
- if (num2==1)
- {
-  rPIO_SODR_B=(LED1);
-  for(i = 0; i < 10; ++i) Delay(10000000);
- }
- 
- if (num3==2 || num3==3) 
- {
-   rPIO_SODR_B=(LED2);
-   for(i = 0; i < 10; ++i) Delay(10000000);
- }
- 
-if (num1>4)
-{
-   rPIO_SODR_B=(LED3);
-   for(i = 0; i < 10; ++i) Delay(10000000);
-
- }
+  for(i = 0; i < 30; ++i) Delay(100000);
+  
+  n++;
+  
+  }
 }
-}}
