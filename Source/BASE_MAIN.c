@@ -205,21 +205,31 @@ unsigned char Result=0;
 
 int main()
 {
-int n=0;
+	int ms=0;
+	int ss=0;
+	int mm=0;
+	int hh=0;
+
   	// UART 
 	DBG_Init();
-	Uart_Printf("Hello World\n\r");
 
 	// PIT setup
 	PIT_initiailize();
-
-	while(1) 
+	while(ms<100)
 	{
-		// print
-		Uart_Printf("n=%d \n", n);
 
-		// wait for 1000ms
-		HW_delay_ms(1000);
-	n++;
-	}	
+		ms++;
+		
+		if(ms==100) {ss++; ms=0;}
+		
+		if(ss==60) {mm++; ss=0;}
+		
+		if(mm==60) {hh++; mm=0;}
+
+			// print
+			Uart_Printf("\r\r %d : %d : %d : %d  ", hh,mm,ss,ms);
+
+			// wait for 1000ms
+			HW_delay_ms(10);
+}
 }
