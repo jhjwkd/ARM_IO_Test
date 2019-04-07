@@ -202,14 +202,13 @@ unsigned char Result=0;
 //-----------------------------------------------------------------------------
 /// Main Procedure
 //-----------------------------------------------------------------------------
-
 int main()
 {
 	int ms=0;
 	int ss=0;
 	int mm=0;
 	int hh=0;
-
+	Port_Setup();
   	// UART 
 	DBG_Init();
 
@@ -220,16 +219,42 @@ int main()
 
 		ms++;
 		
-		if(ms==100) {ss++; ms=0;}
+		if(ms==100)
+		{
+		 	ss++;
+			ms=0;
+			rPIO_SODR_B=(LED1);
+			
+		}
 		
-		if(ss==60) {mm++; ss=0;}
+		if(ss==60)
+		{
+			mm++;
+			ss=0;
+			rPIO_SODR_B=(LED2);
+			
+		}
 		
-		if(mm==60) {hh++; mm=0;}
+		if(mm==60) 
+		{
+			hh++;
+			mm=0;
+			rPIO_SODR_B=(LED3);
+			
+		}
 
 			// print
 			Uart_Printf("\r\r %d : %d : %d : %d  ", hh,mm,ss,ms);
 
 			// wait for 1000ms
 			HW_delay_ms(10);
+			rPIO_CODR_B=(LED1|LED2|LED3);
 }
 }
+
+
+		// wait for 1000ms
+		//rPIO_SODR_B=(LED1);
+		//HW_delay_ms(5);
+		//rPIO_CODR_B=(LED1);
+		//HW_delay_ms(5);
