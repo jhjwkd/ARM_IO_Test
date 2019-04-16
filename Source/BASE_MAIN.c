@@ -18,7 +18,13 @@
 unsigned int 	Key_Count=0,Pre_Key_Data=0;
 unsigned char Switch_Check(void);
 unsigned char Port_Flag=0;
-unsigned int	Count=0; 
+unsigned int	Count=0;
+
+int ms=0;
+int ss=0;
+int mm=0;
+int hh=0; 
+	
 //============================================================================
 //  Function  : PIT Interrupt
 //============================================================================
@@ -136,13 +142,15 @@ void Port_Setup(void)
 	
 	// Enable PIO in output mode: Port A 0-7
 	AT91F_PIO_CfgOutput( AT91C_BASE_PIOA,  PORTA);
+	
+	//AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA, 1 << AT91C_ID_PIOA);
 
 	// LED (Port B: 28-30)
 	AT91F_PIO_CfgOutput( AT91C_BASE_PIOB, LED1|LED2|LED3 ); // output mode
 	AT91F_PIO_CfgPullup( AT91C_BASE_PIOB, LED1|LED2|LED3 ); // pull-up
 
 	// Switch (Port A: 8,9)
-	AT91F_PIO_CfgInput( AT91C_BASE_PIOA, SW1|SW2 ); // output mode
+	AT91F_PIO_CfgInput( AT91C_BASE_PIOA, SW1|SW2 ); // input mode
 	AT91F_PIO_CfgPullup( AT91C_BASE_PIOA, SW1|SW2 ); // pull-up
 
 //AT91F_PIO_SetOutput(AT91C_BASE_PIOA, (1<<13));
@@ -199,21 +207,48 @@ unsigned char Result=0;
 	Pre_Key_Data=Result;
 	return	Result;
 }
+
+
+	
+void PIO_ISR_Reset()
+{
+	ms=0;
+	ss=0;
+	mm=0;
+	hh=0;
+}
+
+void Interrupt_setup()
+{
+	// Use SW1 as an input
+	AT91F_PIO_InputFilterEnable(AT91C_BASE_PIOA, SW1);
+
+	// Set interrupt to ..
+	AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA, SW1);
+	
+	//Set callback
+	AT91F_AIC_ConfigureIt(AT91C_BASE_AIC, AT91C_ID_PIOA ,7, 1, PIO_ISR_Reset);
+	
+	//AT91F_AIC_EnableIt(AT91C_BASE_AIC, AT91C_ID_PIOA);
+}
+
 //-----------------------------------------------------------------------------
 /// Main Procedure
 //-----------------------------------------------------------------------------
 int main()
 {
-	int ms=0;
-	int ss=0;
-	int mm=0;
-	int hh=0;
+
 	Port_Setup();
+	
   	// UART 
 	DBG_Init();
 
 	// PIT setup
 	PIT_initiailize();
+	
+	// Interrupt setup
+	Interrupt_setup();
+	
 	while(ms<100)
 	{
 
