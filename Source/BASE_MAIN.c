@@ -29,14 +29,14 @@ int hh=0;
 //  Function  : PIT Interrupt
 //============================================================================
 // PIT interrupt service routine
-volatile unsigned int ms_count = 0;
+volatile unsigned int ten_ms_count = 0;
 void PIT_ISR()
 {
 	// Clear PITS
 	AT91F_PITGetPIVR(AT91C_BASE_PITC);
 
-	// increase ms_count
-	ms_count++;
+	// increase ten_ms_count
+	ten_ms_count++;
 }
 
 // Initialize PIT and interrupt
@@ -50,7 +50,8 @@ void PIT_initiailize()
 
 	// PIV (Periodic Interval Value) = 3000 clocks = 1 msec
 	// MCK/16 = 48,000,000 / 16 = 3,000,000 clocks/sec
-	AT91F_PITSetPIV(AT91C_BASE_PITC, 3000-1);
+	// 
+	AT91F_PITSetPIV(AT91C_BASE_PITC, 30-1);
 
 	// disable PIT periodic interrupt for now
 	AT91F_PITDisableInt(AT91C_BASE_PITC);
@@ -63,19 +64,19 @@ void PIT_initiailize()
 }
 
 // delay in ms by PIT interrupt
-void HW_delay_ms(unsigned int ms)
+void HW_delay_10us(unsigned int ten_ms)
 {
 	// special case
-	if(ms == 0) return;
+	if(ten_ms == 0) return;
 
 	// start time
-	ms_count = 0;
+	ten_ms_count = 0;
 
 	// enable PIT interrupt
 	AT91F_PITEnableInt(AT91C_BASE_PITC);
 
 	// wait for ms
-	while(ms_count < ms);
+	while(ten_ms_count < ten_ms);
 
 	// disable PIT interrupt
 	AT91F_PITDisableInt(AT91C_BASE_PITC);
@@ -141,7 +142,7 @@ void Port_Setup(void)
 	AT91F_PMC_EnablePeriphClock ( AT91C_BASE_PMC, 1 << AT91C_ID_PIOA );
 	
 	// Enable PIO in output mode: Port A 0-7
-	AT91F_PIO_CfgOutput( AT91C_BASE_PIOA,  PORTA);
+	//AT91F_PIO_CfgOutput( AT91C_BASE_PIOA,  PORTA);
 	
 	//AT91F_PIO_InterruptEnable(AT91C_BASE_PIOA, 1 << AT91C_ID_PIOA);
 
@@ -152,6 +153,10 @@ void Port_Setup(void)
 	// Switch (Port A: 8,9)
 	AT91F_PIO_CfgInput( AT91C_BASE_PIOA, SW1|SW2 ); // input mode
 	AT91F_PIO_CfgPullup( AT91C_BASE_PIOA, SW1|SW2 ); // pull-up
+	
+	AT91F_PIO_CfgOutput( AT91C_BASE_PIOA, PA0);
+	AT91F_PIO_CfgInput( AT91C_BASE_PIOA, PA1);
+
 
 //AT91F_PIO_SetOutput(AT91C_BASE_PIOA, (1<<13));
 //AT91F_PIO_ClearOutput(AT91C_BASE_PIOA, (1<<13));
@@ -235,61 +240,107 @@ void Interrupt_setup()
 //-----------------------------------------------------------------------------
 /// Main Procedure
 //-----------------------------------------------------------------------------
+void TC_initialize()
+{
+  // Enable peripheral clock in PMC for Timer Counter 0
+  AT91F_TC0_CfgPMC();
+
+  // Configure Timer Counter 0 with Software Trigger Effect on TIOA
+// MCK/2 = 48,000,000 / 2 = 24,000,000 clocks/sec
+  TC_Configure(AT91C_BASE_TC0, AT91C_TC_CLKS_TIMER_DIV3_CLOCK |
+                               AT91C_TC_ASWTRG); 
+}
+
+
 int main()
 {
+  int n =0;
 
+  // Port set up
 	Port_Setup();
-	
-  	// UART 
-	DBG_Init();
 
-	// PIT setup
-	PIT_initiailize();
+	// UART 
+  DBG_Init();
+  Uart_Printf("Ultrasound - Test\n");
+
+  // PIT setup
+  PIT_initiailize();
+
+  // Timer counter  
+	TC_initialize();
 	
-	// Interrupt setup
-	Interrupt_setup();
-	
-	while(ms<100)
+	while(1) 
 	{
+		Uart_Printf("iter = %d\n\r", n);
 
-		ms++;
-		
-		if(ms==100)
-		{
-		 	ss++;
-			ms=0;
-			rPIO_SODR_B=(LED1);
-			
-		}
-		
-		if(ss==60)
-		{
-			mm++;
-			ss=0;
-			rPIO_SODR_B=(LED2);
-			
-		}
-		
-		if(mm==60) 
-		{
-			hh++;
-			mm=0;
-			rPIO_SODR_B=(LED3);
-			
-		}
+		//    rPIO_SODR_B=(LED1|LED2|LED3);
+		// rPIO_CODR_B=(PA0|PA1);
+		// set trigger
+		Uart_Printf("set trigger");
 
-			// print
-			Uart_Printf("\r\r %d : %d : %d : %d  ", hh,mm,ss,ms);
+		rPIO_SODR_A=(PA0);
 
-			// wait for 1000ms
-			HW_delay_ms(10);
-			rPIO_CODR_B=(LED1|LED2|LED3);
+		// wait for 10us
+		HW_delay_10us(1);
+
+		//rPIO_CODR_B=(PA0 | PA1);
+
+		// HW_delay_10us(1);
+
+
+		// set trigger pin off0
+		rPIO_CODR_A=(PA0);
+		
+		// listen to echo pin if it's on
+		//start the timer
+		while(1)
+		{
+			if(AT91F_PIO_IsInputSet(AT91C_BASE_PIOA,PA1))  break;
+		}
+		// TC_Start(AT91C_BASE_TC0
+		
+
+		TC_Start(AT91C_BASE_TC0);
+		//listen to echo pin if it's off
+		while(1)
+		{
+			if(!AT91F_PIO_IsInputSet(AT91C_BASE_PIOA,PA1))  break;
+		}
+		Uart_Printf("bbbbb");
+		//stop the timer
+		TC_Stop(AT91C_BASE_TC0);	
+
+
+		//Tc _ CF -> cm
+
+		Uart_Printf( " \t %lf cm \n\r", (double)(AT91C_BASE_TC0->TC_CV)/(58.0*1.5));
+
+
+		//   TC_Start(AT91C_BASE_TC0);
+			// Ÿ�̸ӽ���
+
+		// ������
+		HW_delay_10us(100);
+
+			// Ÿ�̸ӽ�ž
+
+		/*	
+		 if (AT91C_BASE_TC0->TC_SR & AT91C_TC_COVFS)
+			{
+				Uart_Printf("Overflow - ");
+			}
+			else
+			{
+				Uart_Printf("Normal - ");
+			}
+
+			// Ÿ�̸Ӱ�
+			*/
+
+			
+	//	rPIO_CODR_B=(LED1|LED2|LED3);
+			HW_delay_10us(50000);
+			n++;
+	} 
 }
-}
 
-
-		// wait for 1000ms
-		//rPIO_SODR_B=(LED1);
-		//HW_delay_ms(5);
-		//rPIO_CODR_B=(LED1);
-		//HW_delay_ms(5);
